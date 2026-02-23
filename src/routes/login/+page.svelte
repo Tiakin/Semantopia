@@ -1,4 +1,5 @@
 <script lang="ts">
+	import logo from '$lib/assets/logo.png'
 	import { goto } from '$app/navigation';
 	import { sessionStore } from '$lib/store/sessionStore';
 	import type { sessionData } from '$lib/store/sessionStore';
@@ -65,7 +66,7 @@
 		style="width: 450px; height: 653px;"
 	>
 		<div class="mb-6 rounded-full bg-indigo-500 p-4">
-			<img src="/src/lib/assets/logo.png" alt="Logo du site web" width="40" height="40" />
+			<img src={logo} alt="Logo du site web" width="40" height="40" />
 		</div>
 
 		<h2 class="mb-2 text-center text-2xl font-bold text-gray-800">Connexion à Sémantopia</h2>

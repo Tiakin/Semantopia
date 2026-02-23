@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Header from '$lib/header.svelte';
+	import puzzle from '$lib/assets/puzzle.png'
 
 	import { GAMES } from '$lib/gameConfig';
 </script>
@@ -20,7 +21,7 @@
 			class="bg-opacity-40 rounded-2xl bg-purple-700 p-8 text-center text-white backdrop-blur-sm"
 		>
 			<img
-				src="/src/lib/assets/puzzle.png"
+				src={puzzle}
 				alt="Logo du site web"
 				width="60"
 				height="60"
