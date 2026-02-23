@@ -1,5 +1,6 @@
 import pool from '$lib/server/db';
 import { endGameSession } from '$lib/utils/gameSession';
+import { checkWord, fetchRandomWord } from '$lib/utils/word2vec';
 import type { RequestEvent } from '@sveltejs/kit';
 const activeSessions: Map<
 	string,
@@ -56,7 +57,7 @@ export async function POST({ request }: RequestEvent) {
 	const { wordToFind } = session;
 	let isWin: boolean = false;
 	if (areAnagrams(wordToFind, userGuess)) {
-		if ((await checkWordExist(userGuess)) == false) {
+		if ((await checkWord(userGuess)) == false) {
 			return new Response(JSON.stringify({ message: 'Ce n est pas le bon mot', isWin }), {
 				status: 200
 			});
@@ -100,12 +101,7 @@ export async function PUT({ request }: RequestEvent) {
 	}
 }
 async function randomWord() {
-	const response = await fetch('http://localhost:5000/api/random-word', {
-		method: 'GET',
-		headers: { 'Content-Type': 'application/json' }
-	});
-	const data = await response.json();
-	const wordToFind: string = data.word;
+	const wordToFind: string = await fetchRandomWord();
 	if (
 		wordToFind.length < 5 ||
 		wordToFind.length > 10 ||
@@ -155,15 +151,3 @@ function areAnagrams(word1: string, word2: string): boolean {
 	return true;
 }
 
-async function checkWordExist(word: string) {
-	const response = await fetch('http://localhost:5000/api/check-word', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({
-			word
-		})
-	});
-	const data = await response.json();
-	const isCorrectWord = data.exists;
-	return isCorrectWord;
-}

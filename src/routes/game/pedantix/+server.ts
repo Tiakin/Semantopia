@@ -1,5 +1,6 @@
 import type { hints } from '$lib/models/hints';
 import { endGameSession, startGameSession } from '$lib/utils/gameSession';
+import { checkWord, fetchSimilarityPercent } from '$lib/utils/word2vec';
 import type { RequestEvent } from '@sveltejs/kit';
 
 type MaskToken = number | string | { length: number; state: 'near'; score: number; word: string };
@@ -280,16 +281,8 @@ async function checkSimilarity(wordTab: string, wordGuess: string): Promise<numb
 	}
 
 	try {
-		const response = await fetch('http://localhost:5000/api/similarity', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				word1: newWord,
-				word2: newWordTab
-			})
-		});
-		const data = await response.json();
-		return typeof data.similarity === 'number' ? data.similarity : 0;
+		const result = await fetchSimilarityPercent(newWord, newWordTab);
+		return result.status === 'ok' ? result.similarity / 100 : 0;
 	} catch (error) {
 		console.error('Erreur lors de la vérification de similarité:', error);
 		return newWord.toLowerCase() === newWordTab.toLowerCase() ? 1 : 0;
@@ -422,24 +415,3 @@ async function getHints(title: string, lang: string = 'fr'): Promise<hints> {
 	};
 }
 
-async function checkWord(word: string) {
-	let isWordExist = true;
-	try {
-		const response = await globalThis.fetch('http://localhost:5000/api/check-word', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				word: word
-			})
-		});
-		const data = await response.json();
-		if (!data.exists) {
-			isWordExist = false;
-			return isWordExist;
-		}
-		return isWordExist;
-	} catch (error) {
-		console.error('Erreur lors de la vérification du mot:', error);
-		return false;
-	}
-}

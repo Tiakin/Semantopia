@@ -1,5 +1,6 @@
 import type { RequestEvent } from '@sveltejs/kit';
 import { endGameSession, startGameSession } from '$lib/utils/gameSession';
+import { checkWord, fetchMostSimilar } from '$lib/utils/word2vec';
 
 export async function POST({ request }: RequestEvent) {
 	const { sizeWord, userId } = await request.json();
@@ -50,24 +51,17 @@ async function getRandomWord(sizeWord: number): Promise<{ name: string; categori
 	return data[0];
 }
 async function getSimilarWord(word: string) {
-	const normWord = normalize(word);
-	const response = await fetch('http://localhost:5000/api/most-similar', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({
-			word: word,
-			topn: 100
-		})
-	});
-	const data = await response.json();
-	for (const item of data.similar_words) {
-		const candidat = item.word;	
+	const similarWords = await fetchMostSimilar(word, 100);
+	if (similarWords.length === 0) {
+		return word;
+	}
+	for (const candidat of similarWords) {
 		const normCandidat = normalize(candidat);
-		if (!normCandidat.includes(normalize(word)) && (await checkWord( normCandidat))){
-			return item.word;
+		if (!normCandidat.includes(normalize(word)) && (await checkWord(normCandidat))) {
+			return candidat;
 		}
 	}
-	return data.similar_words[0].word;
+	return similarWords[0];
 }
 
 function normalize(str: string): string {
@@ -78,25 +72,4 @@ function normalize(str: string): string {
 		.replace(/(s|x|z|à)$/g, '')
 		.trim()
 		
-}
-async function checkWord(word: string) {
-	let isWordExist = true;
-	try {
-		const response = await globalThis.fetch('http://localhost:5000/api/check-word', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				word: word
-			})
-		});
-		const data = await response.json();
-		if (!data.exists) {
-			isWordExist = false;
-			return isWordExist;
-		}
-		return isWordExist;
-	} catch (error) {
-		console.error('Erreur lors de la vérification du mot:', error);
-		return false;
-	}
 }

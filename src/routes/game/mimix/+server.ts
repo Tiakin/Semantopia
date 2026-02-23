@@ -1,5 +1,5 @@
 import type { RequestEvent } from '@sveltejs/kit';
-import { fetchSimilarityPercent, fetchMostSimilar } from '$lib/utils/word2vec';
+import { checkWord, fetchMostSimilar, fetchRandomWord, fetchSimilarityPercent } from '$lib/utils/word2vec';
 import { error } from 'console';
 import pool from '$lib/server/db';
 import { endGameSession } from '$lib/utils/gameSession';
@@ -163,25 +163,14 @@ export async function PUT({ request }: RequestEvent) {
 }
 
 async function randomWord() {
-	const response = await fetch('http://localhost:5000/api/random-word', {
-		method: 'GET',
-		headers: { 'Content-Type': 'application/json' }
-	});
-	const data = await response.json();
-	const wordToFind: string = data.word;
+	const wordToFind: string = await fetchRandomWord();
 	if (
 		wordToFind.length < 3 ||
 		wordToFind.match(/^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/)
 	) {
 		return randomWord();
 	}
-	const checkResponse = await fetch('http://localhost:5000/api/check-word', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ word: wordToFind })
-	});
-	const checkData = await checkResponse.json();
-	if (!checkData.exists) {
+	if (!(await checkWord(wordToFind))) {
 		return randomWord();
 	}
 	return wordToFind;

@@ -1,5 +1,6 @@
 import pool from '$lib/server/db';
 import { endGameSession } from '$lib/utils/gameSession';
+import { checkWord } from '$lib/utils/word2vec';
 import type { RequestEvent } from '@sveltejs/kit';
 const activeSessions: Map<
 	string,
@@ -164,22 +165,10 @@ async function checkValidWord(word: string, imposedLetters: string) {
 	const normalizeLetters = normalize(imposedLetters);
 	if (normalizeWord !== normalizeLetters) {
 		if (normalizeWord.includes(normalizeLetters)) {
-			if (await checkWordExist(normalizeWord)) {
+			if (await checkWord(normalizeWord)) {
 				return true;
 			}
 		}
 	}
 	return false;
-}
-async function checkWordExist(word: string) {
-	const response = await fetch('http://localhost:5000/api/check-word', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({
-			word
-		})
-	});
-	const data = await response.json();
-	const isCorrectWord = data.exists;
-	return isCorrectWord;
 }

@@ -95,3 +95,23 @@ export async function fetchSimilarityPercent(
 		return { status: 'error' };
 	}
 }
+
+export async function checkWord(word: string, baseUrl: string = DEFAULT_BASE_URL): Promise<boolean> {
+	try {
+		const response = await fetch(`${baseUrl}/api/check-word`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ word })
+		});
+
+		if (!response.ok) {
+			return false;
+		}
+
+		const data = await parseJsonSafe(response);
+		return Boolean(data?.exists);
+	} catch (error) {
+		console.error('word2vec: erreur check-word', error);
+		return false;
+	}
+}

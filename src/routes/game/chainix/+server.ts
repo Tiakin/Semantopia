@@ -1,6 +1,6 @@
 import pool from '$lib/server/db';
 import { endGameSession } from '$lib/utils/gameSession';
-import { fetchRandomWord } from '$lib/utils/word2vec';
+import { checkWord, fetchRandomWord } from '$lib/utils/word2vec';
 import type { RequestEvent } from '@sveltejs/kit';
 
 const activeSessions: Map<
@@ -74,7 +74,7 @@ export async function POST({ request }: RequestEvent) {
 
 	const matchesChain = suffixes.some((s) => guess.startsWith(s));
 
-	if (matchesChain && (await checkWordExist(guess))) {
+	if (matchesChain && (await checkWord(guess))) {
 		isValid = true;
 		// Bonus de temps en fonction de la longueur
 		timeBonus = userGuess.length <= 5 ? 2 : userGuess.length <= 8 ? 3 : 4;
@@ -103,23 +103,3 @@ export async function PUT({ request }: RequestEvent) {
 	}
 }
 
-async function checkWordExist(word: string) {
-	const normalize = (word: string): string => {
-		return word
-			.normalize('NFD')
-			.replace(/[\u0300-\u036f]/g, '')
-			.trim()
-			.toLowerCase();
-	};
-	const normalizeWord = normalize(word);
-	const response = await fetch('http://localhost:5000/api/check-word', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({
-			word: normalizeWord
-		})
-	});
-	const data = await response.json();
-	const isCorrectWord = data.exists;
-	return isCorrectWord;
-}
