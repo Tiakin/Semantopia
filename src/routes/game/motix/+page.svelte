@@ -83,22 +83,16 @@
 	async function sendGuess() {
 		isWordExist = true;
 		try {
-			const response = await fetch('http://localhost:5000/api/check-word', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					word: userGuess
-				})
-			});
+			const response = await fetch(`/game/motix?word=${encodeURIComponent(userGuess)}`);
 			const data = await response.json();
 			if (!data.exists) {
 				isWordExist = false;
 				return null;
 			}
 		} catch (error) {
-			return new Response(JSON.stringify({ message: 'Erreur serveur.' + error }), {
-				status: 500
-			});
+			console.error('Erreur lors de la vérification du mot:', error);
+			isWordExist = false;
+			return null;
 		}
 
 		nbEssai++;
