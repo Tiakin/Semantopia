@@ -18,10 +18,12 @@ MODEL_FILENAME = "cc.fr.300.vec.gz"
 MODEL_URL = "https://dl.fbaipublicfiles.com/fasttext/vectors-crawl/cc.fr.300.vec.gz"
 MODEL_PATH = BASE_DIR / MODEL_FILENAME
 MODEL_NOT_LOADED = "Modèle non chargé"
+BANNED_WORDS_PATH = BASE_DIR / "banned_words.txt"
 
 # Pré-charger le modèle à l'import du module
 model = None
 print("Initialisation du service FastText français...")
+BANNED_WORDS = set()
 
 # Groupes d'articles pour donner une similarité parfaite sur les déterminants
 ARTICLE_GROUPS = [
@@ -87,6 +89,21 @@ def load_model() -> Optional[object]:
     return KeyedVectors.load_word2vec_format(str(model_path), binary=False)
 
 
+def load_banned_words(path: Path) -> set:
+    """Charge les mots bannis depuis un fichier (un mot par ligne)."""
+    if not path.exists():
+        return set()
+    banned = set()
+    try:
+        for line in path.read_text(encoding="utf-8").splitlines():
+            entry = clean_word(line.split("#", 1)[0])
+            if entry:
+                banned.add(entry)
+    except Exception as exc:
+        print(f"Erreur lors du chargement des mots bannis: {exc}")
+    return banned
+
+
 try:
     model = load_model()
     if model is not None:
@@ -96,6 +113,10 @@ try:
 except Exception as exc:
     print(f"Erreur lors du chargement du modèle FastText: {exc}")
     model = None
+
+BANNED_WORDS = load_banned_words(BANNED_WORDS_PATH)
+if BANNED_WORDS:
+    print(f"Mots bannis chargés: {len(BANNED_WORDS)}")
 
 
 def clean_word(raw: str) -> str:
@@ -108,6 +129,13 @@ def is_valid_word(word: str) -> bool:
     if not word:
         return False
     return bool(re.fullmatch(r"[a-zA-Zàçéèêëïôùûü]+", word))
+
+
+def is_banned_word(word: str) -> bool:
+    """Indique si un mot est dans la liste des mots bannis."""
+    if not word:
+        return False
+    return clean_word(word) in BANNED_WORDS
 
 
 def same_article_group(w1: str, w2: str) -> bool:
@@ -157,6 +185,9 @@ def calculate_similarity():
         if not word1 or not word2:
             return jsonify({"error": "Les deux mots sont requis"}), 400
 
+        if is_banned_word(word1) or is_banned_word(word2):
+            return jsonify({"error": "Mot interdit"}), 400
+
         if is_integer_string(word1) and is_integer_string(word2):
             sim = number_similarity(word1, word2)
             print(f'Numeric similarity between "{word1}" and "{word2}": {sim}')
@@ -191,8 +222,8 @@ def get_random_word():
 
         candidates = [
             word
-            for word in model.index_to_key[:100000]
-            if is_valid_word(word) and len(word) >= 4
+            for word in model.index_to_key[:10000]
+            if is_valid_word(word) and len(word) >= 4 and not is_banned_word(word)
         ]
 
         if not candidates:
@@ -214,6 +245,9 @@ def get_most_similar():
 
         if not word:
             return jsonify({"error": "Le mot est requis"}), 400
+
+        if is_banned_word(word):
+            return jsonify({"error": "Mot interdit"}), 400
 
         if model is None:
             return jsonify({"error": MODEL_NOT_LOADED}), 500
@@ -248,6 +282,9 @@ def check_word():
 
         if not word:
             return jsonify({"error": "Le mot est requis"}), 400
+
+        if is_banned_word(word):
+            return jsonify({"error": "Mot interdit"}), 400
 
         if model is None:
             return jsonify({"error": MODEL_NOT_LOADED}), 500
