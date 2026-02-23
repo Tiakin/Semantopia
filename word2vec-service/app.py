@@ -91,6 +91,11 @@ def load_model() -> Optional[object]:
     return KeyedVectors.load_word2vec_format(str(model_path), binary=False)
 
 
+def clean_word(raw: str) -> str:
+    """Nettoie et normalise une chaîne en minuscule sans espaces superflus."""
+    return (raw or "").strip().lower()
+
+
 def load_banned_words(path: Path) -> set:
     """Charge les mots bannis depuis un fichier (un mot par ligne)."""
     if not path.exists():
@@ -120,11 +125,6 @@ except Exception as exc:
 BANNED_WORDS = load_banned_words(BANNED_WORDS_PATH)
 if BANNED_WORDS:
     print(f"Mots bannis chargés: {len(BANNED_WORDS)}")
-
-
-def clean_word(raw: str) -> str:
-    """Nettoie et normalise une chaîne en minuscule sans espaces superflus."""
-    return (raw or "").strip().lower()
 
 
 def is_valid_word(word: str) -> bool:
