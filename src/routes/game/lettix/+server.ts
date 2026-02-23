@@ -14,7 +14,6 @@ export async function GET({ url }: RequestEvent) {
 	try {
 		const sessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 		const wordToFind: string = await randomWord();
-		console.log(wordToFind)
 		const shuffleWordFind: string = shuffleWord(wordToFind);
 		activeSessions.set(sessionId, {
 			wordToFind: wordToFind,
@@ -63,7 +62,6 @@ export async function POST({ request }: RequestEvent) {
 			});
 		}
 		const newWord: string = await randomWord();
-		console.log(newWord)
 		const newWordShuffle: string = shuffleWord(newWord);
 		activeSessions.set(sessionId, {
 			wordToFind: newWord,

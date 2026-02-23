@@ -70,7 +70,7 @@
 		</p>
 		<div class="my-4 h-px w-full bg-gray-700"></div>
 		<p class="text-sm text-gray-500">
-			© 2025 Sémantopia. Tous droits réservés. <i class="fa-solid fa-flag"></i> Fièrement français.
+			© 2026 Sémantopia. Tous droits réservés.
 		</p>
 	</div>
 </footer>

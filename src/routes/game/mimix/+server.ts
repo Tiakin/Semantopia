@@ -88,7 +88,6 @@ export async function POST({ request }: RequestEvent) {
 	try {
 		const { wordIntruder, totalIntruderFound } = session;
 		let isWin: boolean = false;
-		console.log(normalize(word), normalize(wordIntruder));
 		if (normalize(word) === normalize(wordIntruder)) {
 			isWin = true;
 			const newWordBasic: string = await randomWord();
