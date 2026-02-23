@@ -8,6 +8,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from gensim.models import KeyedVectors
 
+HOST = "0.0.0.0"
+PORT = 5000
 
 app = Flask(__name__)
 CORS(app)
@@ -108,6 +110,7 @@ try:
     model = load_model()
     if model is not None:
         print("Modèle FastText chargé avec succès !")
+        print(f"Listening on {HOST}:{PORT}")
     else:
         print("Modèle FastText non chargé.")
 except Exception as exc:
@@ -306,6 +309,5 @@ def health():
         }
     )
 
-
 if __name__ == "__main__":
-    app.run(debug=False, port=5000, use_reloader=False)
+    app.run(debug=False, host=HOST, port=PORT, use_reloader=False)

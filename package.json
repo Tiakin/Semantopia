@@ -15,8 +15,8 @@
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run && npm run test:e2e",
 		"test:e2e": "playwright test",
-		"word2vec:install": "cd word2vec-service && python -m venv venv && .\\venv\\Scripts\\pip install -r requirements.txt",
-		"word2vec": "cd word2vec-service && .\\venv\\Scripts\\python app.py"
+		"word2vec:install": "cd word2vec-service && python -m venv venv && (./venv/Scripts/pip install -r requirements.txt || ./venv/bin/pip install -r requirements.txt)",
+		"word2vec": "cd word2vec-service && (./venv/Scripts/python app.py || ./venv/bin/python app.py)"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.4.0",
