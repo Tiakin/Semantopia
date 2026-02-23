@@ -1,6 +1,7 @@
 import type { SimilarityPercentResult } from '$lib/types/word2vec';
+import { env } from '$env/dynamic/private';
 
-const DEFAULT_BASE_URL = 'http://localhost:5000';
+const DEFAULT_BASE_URL = env.W2V_URL ?? 'http://localhost:5000';
 
 export type { SimilarityPercentResult };
 
