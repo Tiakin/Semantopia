@@ -4,7 +4,7 @@ export async function startGameSession(userId: number | null | undefined, type: 
 	if (!userId) return;
 	const date = new Date();
 	await pool.query(
-		'INSERT INTO GAME_SESSION(DATE_PARTIE,EN_COURS,NOMBRE_ESSAI,TYPE,WIN,USER_ID) VALUES(?,1,0,?,0,?) ',
+		'INSERT INTO GAME_SESSION(DATE_PARTIE,EN_COURS,NOMBRE_ESSAI,TYPE,WIN,USER_ID,SCORE) VALUES(?,1,0,?,0,?,null) ',
 		[date, type, userId]
 	);
 }
