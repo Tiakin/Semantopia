@@ -139,7 +139,6 @@ async function unlockAchievement(userId: number, achievementId: number): Promise
 			throw new Error(`Erreur HTTP: ${response.status}`);
 		}
 
-		console.log(`Achievement ${achievementId} débloqué pour l'utilisateur ${userId}`);
 		return true;
 	} catch (error) {
 		console.error(`Erreur lors du déverrouillage de l'achievement ${achievementId}:`, error);

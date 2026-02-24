@@ -39,7 +39,6 @@
 		const cleanupKonami = initKonamiCodeDetection(() => {
 			const userId = session?.id ?? 0;
 			if (userId) {
-				console.log('🎮 Code Konami détecté!');
 				const eventData: GameEventData = {
 					userId,
 					type: 'none',

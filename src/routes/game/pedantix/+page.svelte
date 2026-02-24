@@ -211,7 +211,6 @@
 	}
 
 	async function surrenderGame() {
-		console.log('Abandon de la partie...');
 		isSurrender = true;
 		isVictory = false;
 		try {
@@ -234,7 +233,6 @@
 					return /^[.,!?;:()[\]{}"'«»\-–—]$/.test(word) ? word : word;
 				});
 			}
-			console.log('Revealed Title:', tabTitle);
 			if (data.revealContent) {
 				tabContent = data.revealContent;
 			}

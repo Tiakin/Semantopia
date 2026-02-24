@@ -114,7 +114,6 @@ export async function POST({ request }: RequestEvent) {
 					won: true,
 					attempts: nextState.attemptCounter
 				};
-				console.log('Achievement event (cemantix):', eventData);
 			}
 		}
 
