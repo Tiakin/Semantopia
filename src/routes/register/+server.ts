@@ -30,7 +30,7 @@ export async function POST({ request }: RequestEvent) {
 
 		await pool.query(
 			'INSERT INTO USERS (EMAIL, PASSWORD, PSEUDO,CREATION_DATE,AVATAR) VALUES (?, ?, ?, ?, ?)',
-			[email, hashedPassword, pseudo, userDate, '/static/photo_profil/photo_default.png']
+			[email, hashedPassword, pseudo, userDate, '/photo_profil/photo_default.png']
 		);
 
 		const [rows_id] = (await pool.query(
