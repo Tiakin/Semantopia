@@ -16,7 +16,7 @@ export async function POST({ request }: RequestEvent) {
 				status: 400
 			});
 		}
-		const uploadDir = path.join(process.cwd(), 'static', 'photo_profil');
+		const uploadDir = path.join(process.cwd(), 'static','uploads', 'photo_profil');
 		await mkdir(uploadDir, { recursive: true });
 
 		const newFilePath = path.join(uploadDir, newFileName);
@@ -27,12 +27,12 @@ export async function POST({ request }: RequestEvent) {
 		];
 		const oldAvatarUrl: string = rowsUser[0].AVATAR; 
 		const oldFileName = path.basename(oldAvatarUrl);
-		const oldFilePath = path.join(process.cwd(), 'static', 'photo_profil', oldFileName);
+		const oldFilePath = path.join(process.cwd(), 'static','uploads', 'photo_profil', oldFileName);
 
 		if (existsSync(oldFilePath)) {
 			await unlink(oldFilePath);
 		}
-		const avatarPath = `/photo_profil/${newFileName}`;
+		const avatarPath = `/uploads/photo_profil/${newFileName}`;
 		const arrayBuffer = await file.arrayBuffer();
 		const buffer = Buffer.from(arrayBuffer);
 		await writeFile(newFilePath, buffer);
