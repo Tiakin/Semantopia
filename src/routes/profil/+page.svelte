@@ -115,20 +115,22 @@
 			reader.onload = (e) => {
 				imageSrc = e.target?.result as string;
 				showCropModal = true;
-				setTimeout(() => {
-					cropImage = document.getElementById('cropImage') as HTMLImageElement;
-					cropCanvas = document.getElementById('cropCanvas') as HTMLCanvasElement;
-					if (cropImage) {
-						cropImage.onload = () => {
-							scale = 1;
-							offsetX = 0;
-							offsetY = 0;
-							drawCropPreview();
-						};
-					}
-				}, 100);
 			};
 			reader.readAsDataURL(fichier);
+		}
+	}
+
+	function initCropCanvas(p0: HTMLImageElement) {
+		cropImage = document.getElementById('cropImage') as HTMLImageElement;
+		cropCanvas = document.getElementById('cropCanvas') as HTMLCanvasElement;
+		if (cropImage && imageSrc) {
+			cropImage.onload = () => {
+				scale = 1;
+				offsetX = 0;
+				offsetY = 0;
+				drawCropPreview();
+			};
+			cropImage.src = imageSrc;
 		}
 	}
 
@@ -401,12 +403,16 @@
 				<div class="relative h-[300px] w-[300px] overflow-hidden rounded-lg border-2 border-gray-300 bg-gray-100">
 					<img
 						id="cropImage"
+						bind:this={cropImage}
 						src={imageSrc}
 						alt="Preview"
 						class="hidden"
+						on:load={drawCropPreview}
+						use:initCropCanvas
 					/>
 					<canvas
 						id="cropCanvas"
+						bind:this={cropCanvas}
 						class="cursor-move"
 						on:mousedown={handleMouseDown}
 						on:mousemove={handleMouseMove}
