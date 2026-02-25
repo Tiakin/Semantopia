@@ -25,10 +25,12 @@ export async function POST({ request }: RequestEvent) {
 			Array<{ AVATAR: string }>,
 			unknown
 		];
-		const oldPathFile: string = rowsUser[0].AVATAR;
+		const oldAvatarUrl: string = rowsUser[0].AVATAR; 
+		const oldFileName = path.basename(oldAvatarUrl);
+		const oldFilePath = path.join(process.cwd(), 'static', 'photo_profil', oldFileName);
 
-		if (existsSync(oldPathFile)) {
-			await unlink(oldPathFile);
+		if (existsSync(oldFilePath)) {
+			await unlink(oldFilePath);
 		}
 		const avatarPath = `/photo_profil/${newFileName}`;
 		const arrayBuffer = await file.arrayBuffer();
