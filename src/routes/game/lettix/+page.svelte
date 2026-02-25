@@ -157,8 +157,8 @@
 </script>
 
 <Header />
-<div class="min-h-screen bg-gray-50 p-8">
-	<div class="mx-auto flex max-w-7xl gap-12">
+<div class="min-h-screen bg-gray-50 px-4 py-6 sm:p-8">
+	<div class="mx-auto flex max-w-7xl flex-col gap-12 lg:flex-row">
 		<div class="max-w-3xl flex-1">
 			<div class="mb-6">
 				<div class="mb-8">
@@ -229,7 +229,7 @@
 				]}
 			/>
 		</div>
-		<div class="w-80 shrink-0 space-y-6">
+		<div class="w-full shrink-0 space-y-6 lg:w-80">
 			<GameRules 
 				rules={[
 					'Trouver le mot en déchiffrant l\'annagramme',

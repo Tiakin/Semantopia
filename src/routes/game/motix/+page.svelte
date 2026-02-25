@@ -23,6 +23,7 @@
 	let isLoose = false;
 	let isWin = false;
 	let isWordExist = true;
+	let isWrongLength = false;
 	let tabWordFind: string[] = [];
 	let categorieWord: string = '';
 	let similarWord: string = '';
@@ -82,6 +83,19 @@
 
 	async function sendGuess() {
 		isWordExist = true;
+		isWrongLength = false;
+		
+		// Validate word length
+		const normalizedGuess = userGuess
+			.normalize('NFD')
+			.replace(/[\u0300-\u036f]/g, '')
+			.toLowerCase();
+		
+		if (normalizedGuess.length !== tabWordFind.length) {
+			isWrongLength = true;
+			return null;
+		}
+		
 		try {
 			const response = await fetch(`/game/motix?word=${encodeURIComponent(userGuess)}`);
 			const data = await response.json();
@@ -242,8 +256,8 @@
 
 <Header />
 
-<div class="min-h-screen bg-gray-50 p-8">
-	<div class="mx-auto flex max-w-7xl gap-12">
+<div class="min-h-screen bg-gray-50 px-4 py-6 sm:p-8">
+	<div class="mx-auto flex max-w-7xl flex-col gap-12 lg:flex-row">
 		<div class="max-w-3xl flex-1">
 			<div class="mb-6">
 				<div class="mb-8">
@@ -267,35 +281,56 @@
 			{#if isWin}
 				<GameMessage message="Félicitations vous avez gagner en {nbEssai} essais" type="victory" />
 			{/if}
-			{#if !isWordExist}
-				<div class="flex items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 p-6">
-					<svg
-						class="h-6 w-6 flex-shrink-0 text-amber-600"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke="currentColor"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-						/>
-					</svg>
-					<div>
-						<p class="font-semibold text-amber-900">Mot introuvable</p>
-						<p class="text-sm text-amber-700">Ce mot n'existe pas dans notre vocabulaire</p>
-					</div>
-				</div>
-			{/if}
-
-			<div class="row relative mb-6">
+	{#if isWrongLength}
+		<div class="flex items-center gap-3 rounded-lg border border-red-300 bg-red-50 p-6">
+			<svg
+				class="h-6 w-6 flex-shrink-0 text-red-600"
+				fill="none"
+				viewBox="0 0 24 24"
+				stroke="currentColor"
+			>
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+				/>
+			</svg>
+			<div>
+				<p class="font-semibold text-red-900">Longueur incorrecte</p>
+				<p class="text-sm text-red-700">Le mot doit contenir exactement {tabWordFind.length} lettres</p>
+			</div>
+		</div>
+	{/if}
+	{#if !isWordExist}
+		<div class="flex items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 p-6">
+			<svg
+				class="h-6 w-6 flex-shrink-0 text-amber-600"
+				fill="none"
+				viewBox="0 0 24 24"
+				stroke="currentColor"
+			>
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+				/>
+			</svg>
+			<div>
+				<p class="font-semibold text-amber-900">Mot introuvable</p>
+				<p class="text-sm text-amber-700">Ce mot n'existe pas dans notre vocabulaire</p>
+			</div>
+		</div>
+	{/if}			<div class="row relative mb-6">
 				<GameInput
 					bind:value={userGuess}
 					gradient="from-emerald-700 via-green-500 to-lime-400"
 					disabled={isDisabled}
 					onsubmit={sendGuess}
 					oninput={(value) => (userGuess = value)}
+					maxlength={tabWordFind.length}
+					minlength={tabWordFind.length}
 				/>
 			</div>
 			<div class="mb-6 rounded-lg p-6">
@@ -304,7 +339,7 @@
 						<div class="flex space-x-1">
 							{#each guess as letter, i}
 								<div
-									class={`flex h-10 w-10 items-center justify-center rounded text-xl font-bold ${getLetterClass(letter, i, guess)}`}
+									class={`flex h-9 w-9 items-center justify-center rounded text-lg font-bold sm:h-10 sm:w-10 sm:text-xl ${getLetterClass(letter, i, guess)}`}
 								>
 									{letter.toUpperCase()}
 								</div>
@@ -313,10 +348,10 @@
 					{/each}
 				</div>
 			</div>
-			<div class="mx-auto mt-16 mb-12 flex max-w-2xl flex-wrap justify-center gap-2">
+			<div class="mx-auto mt-10 mb-10 flex max-w-2xl flex-wrap justify-center gap-2 sm:mt-16 sm:mb-12">
 				{#each letters as letter, i}
 					<div
-						class="flex h-12 w-15 cursor-pointer items-center justify-center rounded select-none {letterColors[
+						class="flex h-10 w-10 cursor-pointer items-center justify-center rounded select-none sm:h-12 sm:w-12 {letterColors[
 							i
 						]}"
 					>
@@ -333,7 +368,7 @@
 				onShare={() => {}}
 			/>
 		</div>
-		<div class="w-80 shrink-0 space-y-6">
+		<div class="w-full shrink-0 space-y-6 lg:w-80">
 			<GameRules
 				rules={[
 					'Trouver le mot mystère dont la longuer est de 5 à 8 lettres en un minimum d\'essais.',

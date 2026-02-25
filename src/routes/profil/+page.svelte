@@ -12,6 +12,16 @@
 	let mdpUser: string = '';
 	let dateFormat: string;
 	let fileInput: HTMLInputElement;
+	let showCropModal = false;
+	let imageSrc: string = '';
+	let cropCanvas: HTMLCanvasElement;
+	let cropImage: HTMLImageElement;
+	let isDragging = false;
+	let startX = 0;
+	let startY = 0;
+	let offsetX = 0;
+	let offsetY = 0;
+	let scale = 1;
 
 	type GameSession = {
 		ID: number;
@@ -101,18 +111,98 @@
 		const target = event.target as HTMLInputElement;
 		const fichier = target.files?.[0];
 		if (fichier && idUser) {
-			const fichierUrl: string = '/photo_profil/' + fichier.name;
+			const reader = new FileReader();
+			reader.onload = (e) => {
+				imageSrc = e.target?.result as string;
+				showCropModal = true;
+				setTimeout(() => {
+					cropImage = document.getElementById('cropImage') as HTMLImageElement;
+					cropCanvas = document.getElementById('cropCanvas') as HTMLCanvasElement;
+					if (cropImage) {
+						cropImage.onload = () => {
+							scale = 1;
+							offsetX = 0;
+							offsetY = 0;
+							drawCropPreview();
+						};
+					}
+				}, 100);
+			};
+			reader.readAsDataURL(fichier);
+		}
+	}
+
+	function drawCropPreview() {
+		if (!cropCanvas || !cropImage) return;
+		const ctx = cropCanvas.getContext('2d');
+		if (!ctx) return;
+
+		cropCanvas.width = 300;
+		cropCanvas.height = 300;
+
+		ctx.clearRect(0, 0, 300, 300);
+		ctx.save();
+		ctx.translate(150 + offsetX, 150 + offsetY);
+		ctx.scale(scale, scale);
+		ctx.drawImage(cropImage, -cropImage.width / 2, -cropImage.height / 2);
+		ctx.restore();
+
+	
+		ctx.globalCompositeOperation = 'destination-in';
+		ctx.beginPath();
+		ctx.arc(150, 150, 120, 0, Math.PI * 2);
+		ctx.fill();
+		ctx.globalCompositeOperation = 'source-over';
+	}
+
+	function handleMouseDown(e: MouseEvent) {
+		isDragging = true;
+		startX = e.clientX - offsetX;
+		startY = e.clientY - offsetY;
+	}
+
+	function handleMouseMove(e: MouseEvent) {
+		if (!isDragging) return;
+		offsetX = e.clientX - startX;
+		offsetY = e.clientY - startY;
+		drawCropPreview();
+	}
+
+	function handleMouseUp() {
+		isDragging = false;
+	}
+
+	function handleWheel(e: WheelEvent) {
+		e.preventDefault();
+		const delta = e.deltaY > 0 ? -0.05 : 0.05;
+		scale = Math.max(0.5, Math.min(3, scale + delta));
+		drawCropPreview();
+	}
+
+	async function saveCroppedImage() {
+		if (!cropCanvas || !idUser) return;
+
+		cropCanvas.toBlob(async (blob) => {
+			if (!blob) return;
 			const formData = new FormData();
+			const fileName = `avatar_${idUser}_${Date.now()}.png`;
 			formData.append('userId', String(idUser));
-			formData.append('file', fichier);
-			formData.append('fileName', fichier.name);
+			formData.append('file', blob, fileName);
+			formData.append('fileName', fileName);
 
 			await fetch('/api/profil/', {
 				method: 'POST',
 				body: formData
 			});
-			sessionStore.updateAvatar(fichierUrl);
-		}
+			sessionStore.updateAvatar('/photo_profil/' + fileName);
+			showCropModal = false;
+		}, 'image/png');
+	}
+
+	function cancelCrop() {
+		showCropModal = false;
+		imageSrc = '';
+		if (fileInput) fileInput.value = '';
 	}
 	onMount(() => {
 		getStats();
@@ -121,7 +211,7 @@
 </script>
 
 <Header />
-<div class="min-h-screen bg-gray-50 py-8">
+<div class="min-h-screen bg-gray-50 px-4 py-6 sm:py-8">
 	<div class="mx-auto max-w-7xl px-4">
 		<div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
 			<aside class="lg:col-span-1">
@@ -301,3 +391,50 @@
 		</div>
 	</div>
 </div>
+
+{#if showCropModal}
+	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+		<div class="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
+			<h3 class="mb-4 text-center text-xl font-bold text-gray-800">Recadrer votre photo</h3>
+			
+			<div class="mb-4 flex justify-center">
+				<div class="relative h-[300px] w-[300px] overflow-hidden rounded-lg border-2 border-gray-300 bg-gray-100">
+					<img
+						id="cropImage"
+						src={imageSrc}
+						alt="Preview"
+						class="hidden"
+					/>
+					<canvas
+						id="cropCanvas"
+						class="cursor-move"
+						on:mousedown={handleMouseDown}
+						on:mousemove={handleMouseMove}
+						on:mouseup={handleMouseUp}
+						on:mouseleave={handleMouseUp}
+						on:wheel={handleWheel}
+					></canvas>
+				</div>
+			</div>
+
+			<p class="mb-4 text-center text-sm text-gray-600">
+				Glissez pour déplacer • Molette pour zoomer
+			</p>
+
+			<div class="flex gap-3">
+				<button
+					on:click={cancelCrop}
+					class="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2 font-semibold text-gray-700 transition hover:bg-gray-50"
+				>
+					Annuler
+				</button>
+				<button
+					on:click={saveCroppedImage}
+					class="flex-1 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700"
+				>
+					Valider
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
