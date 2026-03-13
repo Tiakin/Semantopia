@@ -66,6 +66,8 @@ export async function initDatabase(): Promise<void> {
 					PRIMARY KEY (ID)
 				) 
 			`);
+
+			console.log("Database initialized successfully.");
 		} catch (error) {
 			initPromise = null;
 			throw error;
