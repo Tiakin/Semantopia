@@ -3,7 +3,7 @@ node_modules
 word2vec-service/venv/
 word2vec-service/*.bin
 word2vec-service/*.gz
-static/uploads/photo_profil/*
+uploads/photo_profil/*
 
 # Output
 .output
