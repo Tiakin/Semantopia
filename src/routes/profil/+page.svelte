@@ -196,7 +196,7 @@
 				method: 'POST',
 				body: formData
 			});
-			sessionStore.updateAvatar('/uploads/photo_profil/' + fileName);
+			sessionStore.updateAvatar('/uploads/' + fileName);
 			showCropModal = false;
 		}, 'image/png');
 	}
